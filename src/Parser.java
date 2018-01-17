@@ -28,44 +28,30 @@ public class Parser{
 	
 	public synchronized void parseQueue(ArrayList<String> messages) throws IOException{
 	    ArrayList<String> list = new ArrayList<>();
-	    list.add(messages.get(0));
-        list.add(messages.get(1));
-        list.add(messages.get(2));
-        list.add(messages.get(3));
-        list.add(messages.get(5));
-        list.add(messages.get(6));
-        list.add(" ");
+	    Collections.addAll(list, messages.get(0), messages.get(1), messages.get(2), messages.get(3), messages.get(5), messages.get(6), " ");
 
+        //Set date
         DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
         Date date = new Date();
 
-        String path = (System.getProperty("user.dir") + "\\station_data\\" + (list.get(0).substring(7, list.get(0).length() - 6 )) + "\\" + dateFormat.format(date));
-        System.out.println(path);
-        File dir = new File(path);
-        File file = new File(dir,"data.txt");
-        
+        String station = list.get(0).substring(7, list.get(0).length() - 6);
+        String path = System.getProperty("user.dir") + "\\station_data\\" + station + "\\" + dateFormat.format(date);
 
-        if(!dir.exists()){
-            if(dir.mkdirs()){
-                System.out.println("Successfully created dir");
-            }else{
-                System.out.println("Couldn't make dir");
-                System.exit(0);
-            }
+        //Set directory and file
+        Path dir = Paths.get(path);
+        Path file = dir.resolve("data.txt");
+
+        //Check if the directory exists, if not create it
+        if(!Files.exists(dir)){
+            Files.createDirectories(dir);
         }
-        if(!file.exists()){
-            if(file.createNewFile()){
-                System.out.println("Succesfully created file");
-            }else{
-                System.out.println("Couldn't make file");
-                System.exit(0);
-            }
+        //Check if the file exists, if not create it
+        if(!Files.exists(file)){
+            Files.createFile(file);
         }
 
-        Path textfile = Paths.get(path, "data.txt");
-        try {
-            Files.write(textfile, list, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-        }catch(IOException ex){}
+        //Write to file
+        Files.write(file, list, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 	}
 	
 	public synchronized void handleArrayList(ArrayList<String> messages) {
