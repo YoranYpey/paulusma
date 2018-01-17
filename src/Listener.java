@@ -12,7 +12,7 @@ public class Listener {
 		public int dataloss = 0;
 		
 
-public void initialize_Server() {
+public void initializeServer() {
 	 int portNumber = 7789;
 	 try {
 		 serverSocket = new ServerSocket(portNumber);
@@ -24,7 +24,7 @@ public void initialize_Server() {
 	 }
 }
 
-public void start_to_listen() { 
+public void startToListen() { 
 	
 	 while(true) {
 		 try {
@@ -42,8 +42,8 @@ public void start_to_listen() {
 
 public static void main(String[] args){
 	Listener listener = new Listener();
-	listener.initialize_Server();
-	listener.start_to_listen();
+	listener.initializeServer();
+	listener.startToListen();
 }
 
 
