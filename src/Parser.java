@@ -4,10 +4,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.text.DateFormat;
+import java.text.FieldPosition;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 
 public class Parser{
@@ -26,7 +27,7 @@ public class Parser{
 	}
 	
 	public synchronized void parseQueue(ArrayList<String> messages) throws IOException{
-	    ArrayList<String> list = new ArrayList<String>();
+	    ArrayList<String> list = new ArrayList<>();
 	    list.add(messages.get(0));
         list.add(messages.get(1));
         list.add(messages.get(2));
@@ -35,18 +36,32 @@ public class Parser{
         list.add(messages.get(6));
         list.add(" ");
 
-        String path = System.getProperty("user.dir") + "/station_data";
+        DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+        Date date = new Date();
+
+        String path = (System.getProperty("user.dir") + "\\station_data\\" + (list.get(0).substring(7, list.get(0).length() - 6 )) + "\\" + dateFormat.format(date));
+        System.out.println(path);
         File dir = new File(path);
-        File file = new File(dir,list.get(0).substring(7, list.get(0).length() - 6 ) + ".txt");
+        File file = new File(dir,"data.txt");
 
         if(!dir.exists()){
-            dir.mkdir();
+            if(dir.mkdirs()){
+                System.out.println("Successfully created dir");
+            }else{
+                System.out.println("Couldn't make dir");
+                System.exit(0);
+            }
         }
         if(!file.exists()){
-            file.createNewFile();
+            if(file.createNewFile()){
+                System.out.println("Succesfully created file");
+            }else{
+                System.out.println("Couldn't make file");
+                System.exit(0);
+            }
         }
 
-        Path textfile = Paths.get(path, list.get(0).substring(7, list.get(0).length() - 6 ) + ".txt");
+        Path textfile = Paths.get(path, "data.txt");
         try {
             Files.write(textfile, list, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
         }catch(IOException ex){}
