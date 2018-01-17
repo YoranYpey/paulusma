@@ -1,8 +1,9 @@
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -24,20 +25,25 @@ public class Parser{
 		}*/
 	}
 	
-	public synchronized void parseQueue(BlockingQueue queue){
-		List lines = new ArrayList<>();;
-		
-		Iterator<Integer> it = queue.iterator();
-	    while(it.hasNext()){
-	      lines.add(it.next());
-	    }
-		
-		try{
-			Path file = Paths.get("new-textfile.txt");
-			Files.write(file, lines, Charset.forName("UTF-8"));
-		}catch(IOException ex){
-			System.out.println("IO exception occured");
-		}
+	public synchronized void parseQueue(ArrayList<String> messages) throws IOException{
+	    ArrayList<String> list = new ArrayList<String>();
+	    list.add(messages.get(0));
+        list.add(messages.get(1));
+        list.add(messages.get(2));
+        list.add(messages.get(3));
+        list.add(messages.get(5));
+        list.add(messages.get(6));
+        list.add(" ");
+
+        File file = new File("D:/project2/",list.get(0).substring(7, list.get(0).length() - 6 ) + ".txt");
+        if(!file.exists()){
+            file.createNewFile();
+        }
+
+        Path textfile = Paths.get("D:/project2/" +list.get(0).substring(7, list.get(0).length() - 6 ) + ".txt");
+        try {
+            Files.write(textfile, list, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+        }catch(IOException ex){}
 	}
 	
 	public synchronized void handleArrayList(ArrayList<String> messages) {

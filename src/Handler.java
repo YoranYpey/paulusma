@@ -29,7 +29,7 @@ public class Handler implements Runnable {
 			int counter = 0;
 			while ((clientMessage = fromClient.readLine())!= null) {
 				if (clientMessage.equals("	<MEASUREMENT>")) {
-					ArrayList<String>MessageList = new ArrayList<String>();
+					ArrayList<String> MessageList = new ArrayList<String>();
 					System.out.println("Received a new XML-Entry from: "+client_no);
 					while(counter<14) {
 					clientMessage = fromClient.readLine();
@@ -37,7 +37,8 @@ public class Handler implements Runnable {
 					counter++;
 					}
 				if(counter == 14) {
-					parser.handleArrayList(MessageList);
+					//parser.handleArrayList(MessageList);
+					parser.parseQueue(MessageList);
 					counter =0;
 					}
 				}
