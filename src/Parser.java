@@ -35,12 +35,18 @@ public class Parser{
         list.add(messages.get(6));
         list.add(" ");
 
-        File file = new File("D:/project2/",list.get(0).substring(7, list.get(0).length() - 6 ) + ".txt");
+        String path = System.getProperty("user.dir") + "/station_data";
+        File dir = new File(path);
+        File file = new File(dir,list.get(0).substring(7, list.get(0).length() - 6 ) + ".txt");
+
+        if(!dir.exists()){
+            dir.mkdir();
+        }
         if(!file.exists()){
             file.createNewFile();
         }
 
-        Path textfile = Paths.get("D:/project2/" +list.get(0).substring(7, list.get(0).length() - 6 ) + ".txt");
+        Path textfile = Paths.get(path, list.get(0).substring(7, list.get(0).length() - 6 ) + ".txt");
         try {
             Files.write(textfile, list, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
         }catch(IOException ex){}
