@@ -43,6 +43,7 @@ public class Parser{
         System.out.println(path);
         File dir = new File(path);
         File file = new File(dir,"data.txt");
+        
 
         if(!dir.exists()){
             if(dir.mkdirs()){
