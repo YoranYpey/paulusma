@@ -28,15 +28,15 @@ public class Parser{
 	
 	public synchronized void parseQueue(ArrayList<String> messages) throws IOException{
 	    ArrayList<String> list = new ArrayList<>();
-	    Collections.addAll(list, messages.get(0), messages.get(1), messages.get(2), messages.get(3), messages.get(5), messages.get(6), " ");
+	    Collections.addAll(list, messages.get(0).replaceAll("[^\\d.:-]", ""), messages.get(1).replaceAll("[^\\d.:-]", ""), messages.get(2).replaceAll("[^\\d.:-]", ""), messages.get(3).replaceAll("[^\\d.:-]", ""), messages.get(5).replaceAll("[^\\d.:-]", ""), messages.get(6).replaceAll("[^\\d.:-]", ""), " ");
 
         //Set date
         DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
         Date date = new Date();
 
-        String station = list.get(0).substring(7, list.get(0).length() - 6);
+        String station = list.get(0).replaceAll("[^\\d.:-]", "");
         String path = System.getProperty("user.dir") + "\\station_data\\" + station + "\\" + dateFormat.format(date);
-
+        
         //Set directory and file
         Path dir = Paths.get(path);
         Path file = dir.resolve("data.txt");
