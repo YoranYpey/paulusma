@@ -2,7 +2,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
 
 public class Producer implements Runnable {
@@ -27,18 +26,20 @@ public class Producer implements Runnable {
             while ((clientMessage = fromClient.readLine())!= null) {
                 if (clientMessage.equals("	<MEASUREMENT>")) {
                         //System.out.println("Received a new XML-Entry from: "+client_no);
-                        while (i < 14) {
+                        for(int i = 0; i < 14; i++) {
                             clientMessage = fromClient.readLine();
                             try {
-                                queue.put(clientMessage);
+                                if(!clientMessage.contains("STN")){
+                                    queue.put(clientMessage + " " + Thread.currentThread().getName());
+                                }else{
+                                    queue.put(clientMessage);
+                                }
                                 //System.out.println("Messages produced: " + clientMessage);
                             } catch (InterruptedException ex) {
                                 ex.printStackTrace();
                             }
-                            i++;
                         }
-                        i = 0;
-                }
+                    }
             }
         }catch(IOException e) {
             e.printStackTrace();
