@@ -1,45 +1,54 @@
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
 
-public class Listener {
+public class Listener implements Runnable{
     //serverSockets
-    public Socket client;
-    public ServerSocket serverSocket;
+    private ServerSocket serverSocket = null;
+    private Socket client = null;
     public int client_no = 0;
+    public BlockingQueue<String> queue;
     public int successfulltranfer = 0;
     public int dataloss = 0;
-    private final int PORT = 7789;
 
 
     public void initializeServer() {
+        int portNumber = 7789;
         try {
-            serverSocket = new ServerSocket(PORT);
-            System.out.println("Initialized the server on port "+ PORT);
+            serverSocket = new ServerSocket(portNumber);
+            System.out.println("Initialized the server on port "+portNumber);
         }
         catch(IOException e) {
             System.out.println(e.getMessage());
-            System.out.println("Could not listen on port: "+ PORT);
+            System.out.println("Could not listen on port: "+portNumber);
         }
     }
 
     public void startToListen() {
-        try {
-            client = serverSocket.accept();
-            client_no++;
-        }
-        catch(IOException e) {
-            System.err.println("Could not accept the request");
+
+        while(true) {
+            try {
+                client = serverSocket.accept();
+                client_no++;
+            }
+            catch(IOException e) {
+                System.err.println("Could not accept the request");
+            }
+            //start a new thread that handles the connection with the client.
+            Thread t1 = new Thread(new Producer(client,client_no,queue));
+            t1.start();
         }
     }
 
-    public Listener(){
+    public Listener(BlockingQueue queue){
+        this.queue = queue;
         initializeServer();
-        startToListen();
     }
 
-    public Socket getClient(){
-        return client;
+    @Override
+    public void run() {
+        startToListen();
     }
 }//end of connection

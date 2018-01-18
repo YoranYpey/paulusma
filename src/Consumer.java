@@ -19,30 +19,39 @@ public class Consumer implements Runnable{
 
     @Override
     public void run() {
-        try{
-            //consuming messages until exit message is received
-            DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-            Date date = new Date();
-            String station = queue.peek().substring(7, queue.peek().length() - 6);
-            String path = System.getProperty("user.dir") + "\\Test\\" + station + "\\" + dateFormat.format(date);
-
-            //Set directory and file
-            Path dir = Paths.get(path);
-            Path file = dir.resolve("data.txt");
-
-            try {
-                //Check if the directory exists, if not create it
-                if (!Files.exists(dir)) {
-                    Files.createDirectories(dir);
+        try {
+            String msg;
+            String station;
+            while ((msg = queue.take())!= null) {
+                if(msg.contains("STN")){
+                    station = msg.substring(7, msg.length() - 6);
+                }else{
+                    station = "Unidentified Station";
                 }
-                //Check if the file exists, if not create it
-                if (!Files.exists(file)) {
-                    Files.createFile(file);
+                DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+                Date date = new Date();
+                String path = System.getProperty("user.dir") + "\\Test\\" + station + "\\" + dateFormat.format(date);
+
+                //Set directory and file
+                Path dir = Paths.get(path);
+                Path file = dir.resolve("data.txt");
+
+                try {
+                    //Check if the directory exists, if not create it
+                    if (!Files.exists(dir)) {
+                        Files.createDirectories(dir);
+                    }
+                    //Check if the file exists, if not create it
+                    if (!Files.exists(file)) {
+                        Files.createFile(file);
+                    }
+                    Files.write(file, queue, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+                } catch (IOException ex) {
+                    ex.printStackTrace();
                 }
-                Files.write(file, queue, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
-            } catch (IOException e) {
-                e.printStackTrace();
             }
-        }catch(Exception e){}
+        }catch(InterruptedException ex){
+            ex.printStackTrace();
+        }
     }
 }
