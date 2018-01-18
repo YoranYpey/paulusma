@@ -1,7 +1,6 @@
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 
 public class Listener {
 	//serverSockets
@@ -24,8 +23,7 @@ public void initializeServer() {
 	 }
 }
 
-public void startToListen() { 
-	
+public void startToListen() {
 	 while(true) {
 		 try {
 			 client = serverSocket.accept();
@@ -35,7 +33,7 @@ public void startToListen() {
 			 System.err.println("Could not accept the request");
 		 }
 		 //start a new thread that handles the connection with the client.
-		Thread t1 = new Thread(new Handler(client,client_no,this));
+		 Thread t1 = new Thread(new Handler(client,client_no,this));
 		 t1.start();
 	 }
 }

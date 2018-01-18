@@ -1,12 +1,10 @@
-import java.io.*;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.DateFormat;
-import java.text.FieldPosition;
-import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
@@ -53,7 +51,28 @@ public class Parser{
         //Write to file
         Files.write(file, list, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
 	}
-	
+
+	public synchronized void parseBlockingQueue(BlockingQueue<String> q) throws IOException{
+        DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+        Date date = new Date();
+        String station = q.peek().substring(7, q.peek().length() - 6);
+        String path = System.getProperty("user.dir") + "\\Test\\" + station + dateFormat.format(date);
+
+        //Set directory and file
+        Path dir = Paths.get(path);
+        Path file = dir.resolve("data.txt");
+
+        //Check if the directory exists, if not create it
+        if(!Files.exists(dir)){
+            Files.createDirectories(dir);
+        }
+        //Check if the file exists, if not create it
+        if(!Files.exists(file)){
+            Files.createFile(file);
+        }
+        Files.write(file, q, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
+    }
+
 	public synchronized void handleArrayList(ArrayList<String> messages) {
 		
 		ArrayList<String>MessageList = new ArrayList<String>();

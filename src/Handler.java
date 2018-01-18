@@ -12,12 +12,14 @@ public class Handler implements Runnable {
 	public int client_no;
 	public Listener listener;
 	public Parser parser;
+	public BlockingQueue<String> q;
 	
 	public Handler(Socket client,int client_no, Listener listener) {
 		this.client = client;
 		this.client_no = client_no;
 		this.listener = listener;
-		parser = new Parser();
+		this.q = new ArrayBlockingQueue<>(14);
+		this.parser = new Parser();
 		System.out.println("Ready to receive data from client number: "+client_no);
 	}
 
@@ -29,17 +31,23 @@ public class Handler implements Runnable {
 			int counter = 0;
 			while ((clientMessage = fromClient.readLine())!= null) {
 				if (clientMessage.equals("	<MEASUREMENT>")) {
-					ArrayList<String> MessageList = new ArrayList<String>();
+					ArrayList<String> MessageList = new ArrayList<>();
 					System.out.println("Received a new XML-Entry from: "+client_no);
 					while(counter<14) {
-					clientMessage = fromClient.readLine();
-					MessageList.add(clientMessage);
-					counter++;
+						clientMessage = fromClient.readLine();
+						MessageList.add(clientMessage);
+						try {
+							q.put(clientMessage);
+						}catch(InterruptedException ex){
+							ex.printStackTrace();
+						}
+						counter++;
 					}
-				if(counter == 14) {
-					//parser.handleArrayList(MessageList);
-					parser.parseQueue(MessageList);
-					counter =0;
+					if(counter == 14) {
+						//parser.handleArrayList(MessageList);
+						parser.parseBlockingQueue(q);
+						parser.parseQueue(MessageList);
+						counter =0;
 					}
 				}
 			}
@@ -47,5 +55,5 @@ public class Handler implements Runnable {
 			e.printStackTrace();
 		}
 		
-}	
+	}
 }
