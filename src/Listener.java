@@ -38,7 +38,9 @@ public class Listener implements Runnable{
             }
             //start a new thread that handles the connection with the client.
             Thread t1 = new Thread(new Producer(client,client_no,queue));
+            Thread t2 = new Thread(new Consumer(queue));
             t1.start();
+            t2.start();
         }
     }
 

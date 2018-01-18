@@ -26,18 +26,18 @@ public class Producer implements Runnable {
             BufferedReader fromClient = new BufferedReader(new InputStreamReader(client.getInputStream(),"UTF-8"));
             while ((clientMessage = fromClient.readLine())!= null) {
                 if (clientMessage.equals("	<MEASUREMENT>")) {
-                    //System.out.println("Received a new XML-Entry from: "+client_no);
-                    while(i < 14){
-                        clientMessage = fromClient.readLine();
-                        try {
-                            queue.put(clientMessage);
-                            //System.out.println("Messages produced: " + clientMessage);
-                        }catch(InterruptedException ex){
-                            ex.printStackTrace();
+                        //System.out.println("Received a new XML-Entry from: "+client_no);
+                        while (i < 14) {
+                            clientMessage = fromClient.readLine();
+                            try {
+                                queue.put(clientMessage);
+                                //System.out.println("Messages produced: " + clientMessage);
+                            } catch (InterruptedException ex) {
+                                ex.printStackTrace();
+                            }
+                            i++;
                         }
-                        i++;
-                    }
-                    i = 0;
+                        i = 0;
                 }
             }
         }catch(IOException e) {
