@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -26,11 +27,14 @@ public class Handler implements Runnable{
     private BlockingQueue<String> queue;
     private BufferedReader buf;
     private String[] itemList = {"STN", "DATE", "TIME", "TEMP", "STP", "SLP"};
+    private Path path;
+    private Path file;
+
 
     public Handler(Socket c, BlockingQueue<String> q){
         this.queue = q;
         try {
-            buf = new BufferedReader(new InputStreamReader(c.getInputStream()));
+            buf = new BufferedReader(new InputStreamReader(c.getInputStream()),512);
         }catch(IOException ex){ex.printStackTrace();}
 
     }
@@ -91,19 +95,12 @@ public class Handler implements Runnable{
     }
 
     private String calcValue(String type) throws IOException{
-        String type1 = type.split(">")[0];
-        String station = getStation();
-        DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-        Date date = new Date();
-        String path = System.getProperty("user.dir") + "\\station_data\\" + station + "\\" + dateFormat.format(date);
-
-        //Set directory and file
-        Path dir = Paths.get(path);
-        Path file = dir.resolve("data.txt");
-
         double[][] data = new double[30][2];
+        String type1 = type.split(">")[0];
+        path = getPath();
+        file = path.resolve("data.bin");
 
-        if(Files.exists(dir) && Files.exists(file)) {
+        if(getPath(path, file)) {
             File file2 = file.toFile();
             ReversedLinesFileReader revLineRead = new ReversedLinesFileReader(file2, Charset.forName("UTF-8"));
 
@@ -125,7 +122,6 @@ public class Handler implements Runnable{
                     return missingVal;
                 }
             }
-
             SimpleRegression regression = new SimpleRegression();
             regression.addData(data);
 
@@ -152,24 +148,19 @@ public class Handler implements Runnable{
     }
 
     private String calcTempValue(String type) throws IOException{
+        System.out.println("Entered calcTemp");
         Double measureTemp = Double.parseDouble(type.replaceAll("[^\\d.:-]", ""));
         String type1 = type.split(">")[0];
-        String station = getStation();
-        DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-        Date date = new Date();
-        String path = System.getProperty("user.dir") + "\\station_data\\" + station + "\\" + dateFormat.format(date);
+        path = getPath();
+        file = path.resolve("data.bin");
 
-        //Set directory and file
-        Path dir = Paths.get(path);
-        Path file = dir.resolve("data.txt");
+        double[] data = new double[30];
 
-        double[][] data = new double[30][2];
-
-        if(Files.exists(dir) && Files.exists(file)) {
+        if(getPath(path, file)){
+            System.out.println("Entered rev reader");
             File file2 = file.toFile();
             ReversedLinesFileReader revLineRead = new ReversedLinesFileReader(file2, Charset.forName("UTF-8"));
 
-            //System.out.println("Reading file.......");
             int j = 1;
             for (int i = 0; i < 180; i++) {
                 String line = revLineRead.readLine();
@@ -177,8 +168,7 @@ public class Handler implements Runnable{
                 if (line != null){
                     if (line.contains(type1)) {
                         line = line.replaceAll("[^\\d.:-]", "");
-                        data[j][0] = j;
-                        data[j][1] = Double.parseDouble(line);
+                        data[j] = Double.parseDouble(line);
                         j++;
                     }
                 }else {
@@ -186,23 +176,55 @@ public class Handler implements Runnable{
                 }
             }
 
-            SimpleRegression regression = new SimpleRegression();
-            regression.addData(data);
+            double sum = 0;
+            for(double d : data){
+                sum += d;
+            }
+            double avgTemp = sum/30;
 
             DecimalFormat df;
-            df = new DecimalFormat("#0.0");
+            df = new DecimalFormat("##.00");
 
-            Double missingValss = regression.predict(31);
-            Double diff = (missingValss - measureTemp)/((missingValss + measureTemp)/2)*100;
-            if(diff > 1.20 || diff < 1.20){
-                String missingVals = df.format(missingValss);
+            Double diff = (avgTemp - measureTemp)/((avgTemp + measureTemp)/2)*100;
+            if(diff > 1.20 && diff < 1.20){
+
+                System.out.println(avgTemp);
+                String avgTempStr = df.format(String.valueOf(avgTemp));
                 String[] split = type.split("(?<=>)");
-                String missingVal = (split[0] + missingVals + "<TEMP>");
-                System.out.println("DIFFERENCE IN TEMP, CHANGIN VALUE FROM " + measureTemp + " TO " + missingVals);
-                return missingVal;
+                String missingval = (split[0] + avgTempStr + split[1]);
+                return missingval;
             }
         }
         return type;
     }
 
+    private boolean getPath(Path dir, Path file) {
+        return (Files.exists(dir) && Files.exists(file));
+    }
+
+    private Path getPath(){
+        String station = getStation();
+        DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+        Date date = new Date();
+        String pathString = System.getProperty("user.dir") + "\\station_data\\" + station + "\\" + dateFormat.format(date);
+        Path path = Paths.get(pathString);
+        return path;
+    }
+
+    public static String AsciiToBinary(String asciiString){
+
+        byte[] bytes = asciiString.getBytes();
+        StringBuilder binary = new StringBuilder();
+        for (byte b : bytes)
+        {
+            int val = b;
+            for (int i = 0; i < 8; i++)
+            {
+                binary.append((val & 128) == 0 ? 0 : 1);
+                val <<= 1;
+            }
+            // binary.append(' ');
+        }
+        return binary.toString();
+    }
 }
