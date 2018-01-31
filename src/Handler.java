@@ -22,8 +22,6 @@ import java.util.concurrent.BlockingQueue;
 
 public class Handler implements Runnable{
 
-    static int counter;
-
     private BlockingQueue<String> queue;
     private BufferedReader buf;
     private String[] itemList = {"STN", "DATE", "TIME", "TEMP", "STP", "SLP"};
@@ -98,9 +96,9 @@ public class Handler implements Runnable{
         double[][] data = new double[30][2];
         String type1 = type.split(">")[0];
         path = getPath();
-        file = path.resolve("data.bin");
+        file = path.resolve("data.txt");
 
-        if(getPath(path, file)) {
+        if(checkPath(path, file)) {
             File file2 = file.toFile();
             ReversedLinesFileReader revLineRead = new ReversedLinesFileReader(file2, Charset.forName("UTF-8"));
 
@@ -118,8 +116,7 @@ public class Handler implements Runnable{
                     }
                 }else {
                     String[] split = type.split("(?<=>)");
-                    String missingVal = (split[0] + "0" + split[1]);
-                    return missingVal;
+                    return (split[0] + "0" + split[1]);
                 }
             }
             SimpleRegression regression = new SimpleRegression();
@@ -148,21 +145,19 @@ public class Handler implements Runnable{
     }
 
     private String calcTempValue(String type) throws IOException{
-        System.out.println("Entered calcTemp");
         Double measureTemp = Double.parseDouble(type.replaceAll("[^\\d.:-]", ""));
         String type1 = type.split(">")[0];
         path = getPath();
-        file = path.resolve("data.bin");
+        file = path.resolve("data.txt");
 
         double[] data = new double[30];
 
-        if(getPath(path, file)){
-            System.out.println("Entered rev reader");
+        if(checkPath(path, file)){
             File file2 = file.toFile();
             ReversedLinesFileReader revLineRead = new ReversedLinesFileReader(file2, Charset.forName("UTF-8"));
 
-            int j = 1;
-            for (int i = 0; i < 180; i++) {
+            int j = 0;
+            for (int i = 0; i < 420; i++) {
                 String line = revLineRead.readLine();
                 //System.out.println(line);
                 if (line != null){
@@ -176,29 +171,34 @@ public class Handler implements Runnable{
                 }
             }
 
-            double sum = 0;
-            for(double d : data){
-                sum += d;
-            }
-            double avgTemp = sum/30;
+            if(j==30) {
+                double sum = 0;
+                for (double d : data) {
+                    sum += d;
+                }
+                DecimalFormat df;
+                df = new DecimalFormat("##.00");
+                double avgTemp = sum / 30;
+                String avgTempStr = Long.toString((Math.round(avgTemp * 100) / 100));
 
-            DecimalFormat df;
-            df = new DecimalFormat("##.00");
-
-            Double diff = (avgTemp - measureTemp)/((avgTemp + measureTemp)/2)*100;
-            if(diff > 1.20 && diff < 1.20){
-
-                System.out.println(avgTemp);
-                String avgTempStr = df.format(String.valueOf(avgTemp));
-                String[] split = type.split("(?<=>)");
-                String missingval = (split[0] + avgTempStr + split[1]);
-                return missingval;
+                if (measureTemp > avgTemp * 1.20 || measureTemp < avgTemp * .80) {
+                    System.out.println("Changed temp value from: " + measureTemp + " to: " + avgTemp);
+                    String[] split = type.split("(?<=>)(.*)(?=</)");
+                    String missingval = (split[0] + avgTempStr + split[1]);
+                    System.out.println(missingval);
+                    return missingval;
+                } else {
+                    System.out.println("Diff not enough");
+                }
+            }else{
+                System.out.println("Array not filled full");
             }
         }
+        System.out.println(type);
         return type;
     }
 
-    private boolean getPath(Path dir, Path file) {
+    private boolean checkPath(Path dir, Path file) {
         return (Files.exists(dir) && Files.exists(file));
     }
 
@@ -209,22 +209,5 @@ public class Handler implements Runnable{
         String pathString = System.getProperty("user.dir") + "\\station_data\\" + station + "\\" + dateFormat.format(date);
         Path path = Paths.get(pathString);
         return path;
-    }
-
-    public static String AsciiToBinary(String asciiString){
-
-        byte[] bytes = asciiString.getBytes();
-        StringBuilder binary = new StringBuilder();
-        for (byte b : bytes)
-        {
-            int val = b;
-            for (int i = 0; i < 8; i++)
-            {
-                binary.append((val & 128) == 0 ? 0 : 1);
-                val <<= 1;
-            }
-            // binary.append(' ');
-        }
-        return binary.toString();
     }
 }

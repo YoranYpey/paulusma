@@ -1,7 +1,6 @@
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -9,8 +8,6 @@ import java.nio.file.StandardOpenOption;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 public class Parser implements Runnable{
@@ -40,7 +37,7 @@ public class Parser implements Runnable{
 
             //Set directory and file
             Path dir = Paths.get(path);
-            Path file = dir.resolve("data.bin");
+            Path file = dir.resolve("data.txt");
 
             try {
                 //Check if the directory exists, if not create it
@@ -49,18 +46,16 @@ public class Parser implements Runnable{
                 }
                 //Check if the file exists, if not create it
                 if (!Files.exists(file)) {
-                    System.out.println("Check");
                     Files.write(file, queue, Charset.forName("UTF-8"), StandardOpenOption.CREATE);
                     queue.clear();
 
                 } else {
-                    System.out.println("Check");
                     Files.write(file, queue, Charset.forName("UTF-8"), StandardOpenOption.APPEND);
                     queue.clear();
                 }
             } catch (IOException ex) {
                 ex.printStackTrace();
-                System.out.println("can't write");
+                System.out.println("Can't write");
             }
         }
     }
