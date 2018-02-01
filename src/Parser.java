@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.BlockingQueue;
 
@@ -31,9 +32,10 @@ public class Parser implements Runnable{
         String station = "";
         if (msg.contains("STN")) {
             station = msg.substring(7, msg.length() - 6);
-            DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-            Date date = new Date();
-            String path = System.getProperty("user.dir") + "\\station_data\\" + station + "\\" + dateFormat.format(date);
+            int year = Calendar.getInstance().get(Calendar.YEAR);
+            int month = Calendar.getInstance().get(Calendar.MONTH)+1;
+            int day = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+            String path = System.getProperty("user.dir") + "/station_data/" + station + "/" + year + "/" + month + "/" + day;
 
             //Set directory and file
             Path dir = Paths.get(path);

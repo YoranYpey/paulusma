@@ -20,6 +20,7 @@ public class Server implements Runnable{
         while (true) {
             try {
                 Socket clientSocket = serverSocket.accept();
+                System.out.println("New client detected");
                 Thread t = new Thread(new Handler(clientSocket, queue));
                 t.start();
             } catch (IOException ex) {

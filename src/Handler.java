@@ -14,10 +14,7 @@ import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 
 public class Handler implements Runnable{
@@ -187,14 +184,11 @@ public class Handler implements Runnable{
                     String missingval = (split[0] + avgTempStr + split[1]);
                     System.out.println(missingval);
                     return missingval;
-                } else {
-                    System.out.println("Diff not enough");
                 }
             }else{
                 System.out.println("Array not filled full");
             }
         }
-        System.out.println(type);
         return type;
     }
 
@@ -204,9 +198,10 @@ public class Handler implements Runnable{
 
     private Path getPath(){
         String station = getStation();
-        DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-        Date date = new Date();
-        String pathString = System.getProperty("user.dir") + "\\station_data\\" + station + "\\" + dateFormat.format(date);
+        int year = Calendar.getInstance().get(Calendar.YEAR);
+        int month = Calendar.getInstance().get(Calendar.MONTH);
+        int day = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
+        String pathString = System.getProperty("user.dir") + "/station_data/" + station + "/" + year + "/" + month + "/" + day;
         Path path = Paths.get(pathString);
         return path;
     }
