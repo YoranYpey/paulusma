@@ -1,5 +1,4 @@
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.BlockingQueue;
+import java.util.zip.GZIPOutputStream;
 
 public class Parser implements Runnable{
 
@@ -31,9 +31,9 @@ public class Parser implements Runnable{
         String msg = queue.peek();
         String station = "";
         if (msg.contains("STN")) {
-            station = msg.substring(7, msg.length() - 6);
+            station = msg.substring(5, msg.length());
             int year = Calendar.getInstance().get(Calendar.YEAR);
-            int month = Calendar.getInstance().get(Calendar.MONTH)+1;
+            int month = Calendar.getInstance().get(Calendar.MONTH) + 1;
             int day = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
             String path = System.getProperty("user.dir") + "/station_data/" + station + "/" + year + "/" + month + "/" + day;
 
@@ -61,5 +61,4 @@ public class Parser implements Runnable{
             }
         }
     }
-
 }

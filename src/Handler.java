@@ -1,10 +1,7 @@
 import org.apache.commons.io.input.ReversedLinesFileReader;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.Socket;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -16,12 +13,12 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.zip.GZIPInputStream;
 
 public class Handler implements Runnable{
 
     private BlockingQueue<String> queue;
     private BufferedReader buf;
-    private String[] itemList = {"STN", "DATE", "TIME", "TEMP", "STP", "SLP"};
     private Path path;
     private Path file;
 
@@ -29,17 +26,17 @@ public class Handler implements Runnable{
     public Handler(Socket c, BlockingQueue<String> q){
         this.queue = q;
         try {
-            buf = new BufferedReader(new InputStreamReader(c.getInputStream()),512);
+            buf = new BufferedReader(new InputStreamReader(c.getInputStream()));
         }catch(IOException ex){ex.printStackTrace();}
 
     }
 
     public void run(){
         try {
-            buf.readLine();
             while (true) {
                 if (buf.readLine().contains("<measure".toUpperCase())) {
                     writeQueue();
+                    buf.readLine();
                 } else {
                     buf.readLine();
                 }
@@ -54,7 +51,8 @@ public class Handler implements Runnable{
             try {
                 for (int i = 0; i < 14; i++) {
                     try {
-                        String c = buf.readLine();
+                        String c = buf.readLine().trim();
+                        c = c.substring(0, c.indexOf("/")-1);
                         //if(stringContainsItemFromList(c, itemList)) {
 
                         if(!(c.matches(".*\\d.*"))){
@@ -76,15 +74,11 @@ public class Handler implements Runnable{
         }
     }
 
-    private static boolean stringContainsItemFromList(String inputStr, String[] items) {
-        return Arrays.stream(items).parallel().anyMatch(inputStr::contains);
-    }
-
     private String getStation() {
         String msg = queue.peek();
         String station = "";
         if (msg.contains("STN")) {
-            station = msg.substring(7, msg.length() - 6);
+            station = msg.substring(5, msg.length());
         }
         return station;
     }
@@ -131,13 +125,13 @@ public class Handler implements Runnable{
             String missingVals = df.format(missingValss);
 
             String[] split = type.split("(?<=>)");
-            String missingVal = (split[0] + missingVals + split[1]);
+            String missingVal = (split[0] + missingVals);
             //System.out.println(missingVal);
 
             return missingVal;
         }
         String[] split = type.split("(?<=>)");
-        String missingVal = (split[0] + "0" + split[1]);
+        String missingVal = (split[0] + "0");
         return missingVal;
     }
 
@@ -180,8 +174,8 @@ public class Handler implements Runnable{
 
                 if (measureTemp > avgTemp * 1.20 || measureTemp < avgTemp * .80) {
                     System.out.println("Changed temp value from: " + measureTemp + " to: " + avgTemp);
-                    String[] split = type.split("(?<=>)(.*)(?=</)");
-                    String missingval = (split[0] + avgTempStr + split[1]);
+                    String[] split = type.split("(?<=>)(.*)");
+                    String missingval = (split[0] + avgTempStr);
                     System.out.println(missingval);
                     return missingval;
                 }
