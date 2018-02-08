@@ -3,6 +3,7 @@ import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -34,11 +35,18 @@ public class Handler implements Runnable{
     public void run(){
         try {
             while (true) {
-                if (buf.readLine().contains("<measure".toUpperCase())) {
-                    writeQueue();
-                    buf.readLine();
-                } else {
-                    buf.readLine();
+                String line = "";
+                try{
+                    while ((line = buf.readLine()) != null) {
+                        if (line.contains("<measure".toUpperCase())) {
+                            writeQueue();
+                            buf.readLine();
+                        } else {
+                            buf.readLine();
+                        }
+                    }
+                }catch( SocketException se ){
+                    se.printStackTrace();
                 }
             }
         } catch (IOException ex) {
@@ -95,7 +103,7 @@ public class Handler implements Runnable{
 
             //System.out.println("Reading file.......");
             int j = 1;
-            for (int i = 0; i < 180; i++) {
+            for (int i = 0; i < 420; i++) {
                 String line = revLineRead.readLine();
                 //System.out.println(line);
                 if (line != null){
